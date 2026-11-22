@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KriDaya - Swipe Match (Sponsor & Event)</title>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Eksternal -->
+    <link rel="stylesheet" href="../css/swipe.css">
+</head>
+<body>
+
+    <!-- OVERLAY (Latar belakang gelap saat sidebar terbuka di HP) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="appSidebar">
+        <div>
+            <div class="sidebar-header-top">
+                <div class="brand">
+                    <span class="brand-dot"></span> KriDaya
+                </div>
+                <!-- Tombol Tutup Sidebar khusus Mobile -->
+                <button class="btn-close-sidebar" id="closeSidebarBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <ul class="nav-links">
+                <li><a href="../app.html"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a></li>
+                <li><a href="#"><i class="fa-regular fa-user"></i> Profil</a></li>
+                <li><a href="#"><i class="fa-solid fa-magnifying-glass"></i> Cari Event</a></li>
+                <li><a href="swipe.html" class="active"><i class="fa-solid fa-bolt"></i> Swipe Match</a></li>
+                <li><a href="#"><i class="fa-regular fa-file-lines"></i> Proposal</a></li>
+                <li><a href="#"><i class="fa-solid fa-briefcase"></i> Kerja Sama</a></li>
+                <li><a href="#"><i class="fa-regular fa-clock"></i> Riwayat</a></li>
+            </ul>
+        </div>
+        <div class="sidebar-footer">
+            <div class="subscription-box">
+                <small>Paket</small>
+                <b id="userPlanText">Premium</b>
+                <a href="#" id="planActionLink">Kembali ke Free</a>
+            </div>
+            <div class="user-card">
+                <div class="user-info">
+                    <b id="userNameDisplay">Memuat...</b>
+                    <small id="userRoleDisplay">Memuat...</small>
+                </div>
+                <button class="btn-logout" id="logoutBtn" title="Keluar"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <header>
+            <div class="header-left">
+                <!-- Tombol Hamburger Menu untuk layar kecil -->
+                <button class="hamburger-btn" id="hamburgerBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="header-title">
+                    <h1>Eksplorasi & Pilih Event</h1>
+                    <p>Geser ke kanan (Match) untuk mengajukan dukungan sponsor.</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="swipe-container">
+            <div class="card-stack" id="cardStack"></div>
+
+            <div class="swipe-actions" id="swipeActions">
+                <button class="btn-action btn-reject" id="rejectBtn" title="Tolak"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-action btn-match" id="matchBtn" title="Terima / Match"><i class="fa-solid fa-heart"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <!-- JS Eksternal -->
+    <script src="../js/pages/swipe.js"></script>
+</body>
+</html>
