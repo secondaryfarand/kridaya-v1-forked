@@ -177,6 +177,34 @@ public function setPlan(Request $r, User $user)
     ]);
 }
 
+public function logs()
+{
+    return DB::table('audit_logs')
+        ->leftJoin('users as admins', 'audit_logs.admin_id', '=', 'admins.id')
+        ->select(
+            'audit_logs.*',
+            'admins.name as admin_name'
+        )
+        ->orderByDesc('audit_logs.created_at')
+        ->limit(100)
+        ->get()
+        ->map(function ($log) {
+            return [
+                'at' => $log->created_at,
+                'admin' => $log->admin_name,
+                'action' => $log->action,
+                'label' => $log->label,
+                'target' => match ($log->target_type) {
+                    'user' => 'Pengguna',
+                    'profile' => 'Profil',
+                    default => $log->target_type,
+                },
+                'note' => $log->note,
+            ];
+        })
+        ->values();
+}
+
 public function index(Request $r)
 {
     return Profile::with('user.documents')
