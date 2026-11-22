@@ -140,8 +140,8 @@ function route(){
  if(S.user&&S.user.role=='admin')return go('/admin');
  if(S.user&&r=='masuk')return go(S.user.profile?'/dashboard':'/onboarding');
  if(S.user&&!S.user.profile&&!['onboarding','daftar'].includes(r))return go('/onboarding');
- if(S.user&&S.user.profile&&!S.ok&&!['onboarding','dashboard','daftar'].includes(r)){toast('Menunggu verifikasi admin');return go('/dashboard')}
- $('#app').innerHTML={masuk:V_auth,daftar:()=>V_reg(id),riwayat:V_riw,proposal:V_prop,dashboard:V_home,onboarding:()=>S.user&&(S.user.profile&&S.user.profile.status!='rejected'?V_prof():V_onb()),direktori:V_dir,matching:V_match,workspace:()=>V_work(id)}[r]?.()||'';
+ if(S.user&&S.user.profile&&!['onboarding','dashboard','daftar'].includes(r)&&!S.ok){toast('Menunggu verifikasi admin');return go('/dashboard')}
+ $('#app').innerHTML={masuk:V_auth,daftar:()=>V_reg(id),paket:V_paket,riwayat:V_riw,proposal:V_prop,dashboard:V_home,onboarding:()=>S.user&&(S.user.profile&&S.user.profile.status!='rejected'?V_prof():V_onb()),direktori:V_dir,matching:V_match,workspace:()=>V_work(id)}[r]?.()||'';
  hd(r);$$('.otp input').forEach((i,k,a)=>i.addEventListener('input',()=>i.value&&a[k+1]?.focus()));
  if(r=='onboarding'&&$('#onb')){obInit();pct()}if($('#rs'))rsTick(45);if(r=='dashboard')dashFx();const c=$('#chat');if(c)c.scrollTop=1e9}
 const go=h=>{location.hash=h;route()};addEventListener('hashchange',route);
@@ -340,5 +340,16 @@ Object.assign(A,{
 document.addEventListener('click',e=>{if(!e.target.closest?.('.bw')){const p=$('#pop');if(p)p.hidden=true}});
 document.addEventListener('input',e=>{const t=e.target;if(!t.closest?.('#onb'))return;t.classList.remove('err');const w=t.closest('.drop')||t;w.classList.remove('err');if(w.nextElementSibling?.classList.contains('em'))w.nextElementSibling.remove();obSaveD()});
 document.addEventListener('change',e=>{const t=e.target;if(!t.closest?.('#onb'))return;const w=t.closest('.drop')||t;w.classList.remove('err');if(w.nextElementSibling?.classList.contains('em'))w.nextElementSibling.remove();obSaveD()});
+
+/* ---------- HALAMAN PAKET ---------- */
+const PLANS={free:{n:'Free',price:'Rp 0',pitch:'5 pitch per bulan',cand:'5 kandidat per matching'},premium:{n:'Premium',price:null,pitch:'Pitch tanpa batas',cand:'Hingga 20 kandidat per matching'}};
+function V_paket(){
+ const pr=S.plan=='premium',q=left(),d=new Date(),nx=new Date(d.getFullYear(),d.getMonth()+1,1).toLocaleDateString('id-ID',{day:'numeric',month:'long'}),
+  feat=['Direktori '+(isEv()?'sponsor':'event')+' lengkap','Workspace, MoU dengan barcode, dan laporan','Pratinjau dan unduh dokumen','Notifikasi tugas dan pesan'];
+ const card=(k,cur)=>{const p=PLANS[k];return`<article class="pcard2 ${k=='premium'?'pro':''} ${cur?'cur':''}">${cur?'<span class="pl-tag">Paketmu saat ini</span>':''}<small class="lb">${p.n}</small><h2>${p.price||'Harga menyusul'}</h2><ul class="pl-ul"><li><b>${p.pitch}</b></li><li><b>${p.cand}</b></li>${feat.map(f=>`<li>${f}</li>`).join('')}</ul>${cur?'':k=='premium'?'<button class="btn lime" data-a="plan">Aktifkan Premium (demo)</button>':'<button class="btn ghost" data-a="plan">Kembali ke Free (demo)</button>'}</article>`};
+ return`<div class="dsh"><header class="dhd"><div><h1 class="pt">Paket</h1><p class="sub">Paketmu saat ini: <b>${pr?'Premium':'Free'}</b>.</p></div></header>
+ <section class="pnl"><div class="ph"><h3>Pemakaian bulan ini</h3><span class="ct">${q===null?'Tanpa batas':'Reset '+nx}</span></div>${q===null?'<p class="mut" style="margin:6px 0 0">Pitch tidak dibatasi pada paket Premium.</p>':`<div style="display:flex;justify-content:space-between;margin:8px 0 6px"><b>${S.used} dari ${QUOTA} pitch terpakai</b><span class="mut">Sisa ${q}</span></div><div class="prog"><i style="width:${S.used*100/QUOTA}%"></i></div>`}</section>
+ <div class="plans2">${card('free',!pr)}${card('premium',pr)}</div>
+ <section class="pnl"><div class="ph"><h3>Soal pembayaran</h3></div><p class="mut" style="margin:6px 0 0">Pembayaran Premium belum tersedia. Saat ini admin KriDaya mengaktifkannya secara manual. Tombol di atas hanya berfungsi pada mode demo lokal.</p></section></div>`}
 
 route();
