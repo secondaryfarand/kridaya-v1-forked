@@ -253,7 +253,7 @@ function dp(){
  return{e,m,P,ds,ac,inc,out,dn,end,q,vf,val,head,strip,tdp,tl,rec,drow,nx,prog}}
 Object.assign(IC,{dashboard:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>'});
 
-const STATIC_AVATAR = 'assets/logo_kridaya.png';
+// const STATIC_AVATAR = 'assets/logo_kridaya.png';
 
 const logoUrl=l=>l?API.replace(/\/api$/,'')+'/storage/'+l:'';
 function pbox(full) {
@@ -346,12 +346,17 @@ function notifs(){if(!S.user||S.user.role=='admin')return[];const e=isEv(),me=e?
  return out}
 const fsteps=()=>{const m=S.user.profile||{},e=isEv(),it=[['Unggah logo',!!m.logo],[e?'Pilih kategori sponsor yang dicari':'Pilih kategori event yang ingin didukung',(m.want||[]).length>0],[e?'Coba matching pertamamu':'Cari event untuk didukung',false],['Kirim minat pertama',S.deals.length>0]],cur=it.findIndex(x=>!x[1]),h=['#/profil','#/onboarding',e?'#/matching':'#/direktori',e?'#/matching':'#/direktori'];
  return`<section class="pnl"><div class="ph"><h3>Mulai dari sini</h3><span class="ct">${it.filter(x=>x[1]).length}/${it.length}</span></div><ol class="ms">${it.map(([t,v],i)=>`<li class="${v?'d':i==cur?'c':''}"><i><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg></i><div><a href="${h[i]}" style="text-decoration:none"><b>${t}</b></a></div></li>`).join('')}</ol></section>`};
+
 function editForm(){const m=S.user.profile,e=isEv(),W=e?['F&B','Fashion','Teknologi','Jasa','Kecantikan']:['Webinar','Lomba','Seminar','Lainnya'],
+
  chk=(n,a,sel)=>`<div class="opts">${a.map(x=>`<label class="opt"><input type="checkbox" name="${n}" value="${x}" ${(sel||[]).includes(x)?'checked':''}>${x}</label>`).join('')}</div>`;
  return`<h2 style="margin:0 0 4px">Edit profil</h2><p class="mut" style="margin:0 0 6px">Nama, kategori, lokasi, NIB, dan dokumen legal sudah diverifikasi sehingga tidak bisa diubah di sini.</p>
  <form data-f="pedit"><label>Deskripsi</label><textarea name="d" rows="4" required>${esc(m.d)}</textarea><label>Bentuk dukungan ${e?'yang diterima':'yang ditawarkan'}</label>${chk('t',TYPES,m.t)}<label>${e?'Kategori sponsor yang dicari':'Kategori event yang ingin didukung'}</label>${chk('want',W,m.want)}
+
  ${e?`<label>Badan penaung</label><input name="b" value="${esc(m.b)}"><label>Dana yang dibutuhkan (Rp)</label><input name="bmax" type="number" min="0" value="${esc(m.bmax)}">`:`<div class="two"><div><label>Dana minimal (Rp)</label><input name="bmin" type="number" min="0" value="${esc(m.bmin)}"></div><div><label>Dana maksimal (Rp)</label><input name="bmax" type="number" min="0" value="${esc(m.bmax)}"></div></div>`}
+
  <label>Email</label><input name="m" type="email" value="${esc(m.m)}"><label>WhatsApp</label><input name="w" value="${esc(m.w)}"><label>Media sosial</label><input name="s" value="${esc(m.s)}"><div class="row" style="margin-top:18px"><button type="button" class="btn ghost" onclick="$('#dlg').close()">Batal</button><button class="btn">Simpan</button></div></form>`}
+
 Object.assign(A,{
  obn:()=>{if(obCheck(obs))obShow(obs+1)},obb:()=>obShow(obs-1),obg:e=>{const n=+e.dataset.n;if(n<obs)obShow(n);else if(n==obs+1&&obCheck(obs))obShow(n)},
  pedit:()=>{const d=$('#dlg');d.className='big';d.innerHTML=editForm();d.showModal()},
