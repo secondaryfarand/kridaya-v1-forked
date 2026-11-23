@@ -252,11 +252,20 @@ function dp(){
  const tdp=`<section class="pnl"><div class="ph"><h3>Perlu tindakanmu</h3><span class="ct">${todo.length}</span></div>${todo.join('')||'<p class="mut" style="margin:8px 0 0">Tidak ada yang menunggu.</p>'}</section>`;
  return{e,m,P,ds,ac,inc,out,dn,end,q,vf,val,head,strip,tdp,tl,rec,drow,nx,prog}}
 Object.assign(IC,{dashboard:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',layers:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 12 10 5 10-5"/><path d="m2 17 10 5 10-5"/>',brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>'});
+
+const STATIC_AVATAR = 'assets/logo_kridaya.png';
+
 const logoUrl=l=>l?API.replace(/\/api$/,'')+'/storage/'+l:'';
-function pbox(full){const m=S.user.profile||{},e=isEv(),ok=S.ok,lg=logoUrl(m.logo),
- rows=e?[['Kategori',m.c],['Lokasi',m.l],['Badan penaung',m.b],['Dana dibutuhkan',Rp(+m.bmax||0)],['WhatsApp',m.w]]:[['Kategori',m.c],['Lokasi',m.l],['Berdiri',m.y],['Rentang dana',rng([+m.bmin||0,+m.bmax||0])],['WhatsApp',m.w]];
- return`<aside class="pb"><div class="pb-lg">${lg?`<img src="${esc(lg)}" alt="Logo">`:'<span class="pb-ph"></span>'}</div><h3>${esc(m.n)}</h3><span class="pb-st ${ok?'ok':''}">${ok?'Terverifikasi':m.status=='rejected'?'Ditolak':'Menunggu verifikasi'}</span><dl>${rows.filter(r=>r[1]).map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${full?`<label class="pb-up" for="lg">${lg?'Ganti logo':'Unggah logo'}</label><input id="lg" type="file" accept="image/png,image/jpeg,image/webp" hidden>`:'<a class="pb-lk" href="#/onboarding">Lihat profil</a>'}</aside>`}
-function V_prof(){const m=S.user.profile,e=isEv(),DL={izin:e?'Surat izin kegiatan':'Surat izin usaha',panitia:'Susunan kepanitiaan',rab:'RAB',proposal:'Proposal sponsorship',dok:'Dokumentasi kegiatan',nib:'Dokumen NIB'},
+function pbox(full) {
+  const m = S.user.profile || {}, e = isEv(), ok = S.ok,
+    lg = logoUrl(m.logo) || encodeURI(STATIC_AVATAR),
+    rows = e
+      ? [['Kategori', m.c], ['Lokasi', m.l], ['Badan penaung', m.b], ['Dana dibutuhkan', Rp(+m.bmax || 0)], ['WhatsApp', m.w]]
+      : [['Kategori', m.c], ['Lokasi', m.l], ['Berdiri', m.y], ['Rentang dana', rng([+m.bmin || 0, +m.bmax || 0])], ['WhatsApp', m.w]];
+  return `<aside class="pb"><div class="pb-lg"><img src="${esc(lg)}" alt="Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block" onerror="this.src='${esc(encodeURI(STATIC_AVATAR))}'"></div><h3>${esc(m.n)}</h3><span class="pb-st ${ok ? 'ok' : ''}">${ok ? 'Terverifikasi' : m.status == 'rejected' ? 'Ditolak' : 'Menunggu verifikasi'}</span><dl>${rows.filter(r => r[1]).map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>${full ? `<label class="pb-up" for="lg">${m.logo ? 'Ganti logo' : 'Unggah logo'}</label><input id="lg" type="file" accept="image/png,image/jpeg,image/webp" hidden>` : '<a class="pb-lk" href="#/onboarding">Lihat profil</a>'}</aside>`;
+}
+
+ function V_prof(){const m=S.user.profile,e=isEv(),DL={izin:e?'Surat izin kegiatan':'Surat izin usaha',panitia:'Susunan kepanitiaan',rab:'RAB',proposal:'Proposal sponsorship',dok:'Dokumentasi kegiatan',nib:'Dokumen NIB'},
  kv=[['Email',m.m],['WhatsApp',m.w],['Media sosial',m.s]].filter(r=>r[1]);
  return`<div class="dsh"><header class="dhd"><div><h1 class="pt">Profil</h1><p class="sub">Data ${e?'event':'usaha'} dan dokumen legal yang sudah kamu kirim.</p></div><div class="dact"><button class="btn solid" data-a="pedit">Edit profil</button></div></header>
  <div class="g2">${pbox(true)}<div class="stk2"><section class="pnl"><div class="ph"><h3>Deskripsi</h3></div><p style="margin:6px 0 10px">${esc(m.d)}</p>${chips(m.t||[])}${(m.want||[]).length?`<p class="mut" style="margin:12px 0 4px;font-size:13px">${e?'Mencari sponsor':'Ingin mendukung'}</p>${chips(m.want)}`:''}</section>
