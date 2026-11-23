@@ -40,7 +40,33 @@ document.addEventListener('submit',e=>{const f=e.target.dataset.f,t=e.target,v=O
  if(f=='auth')api('/auth/otp',{method:'POST',body:{identifier:v.id,name:v.name,role:v.role}}).then(()=>{pend={id:v.id,name:v.name,role:v.role};step=1;route()}).catch(x=>toast(x.message));
  if(f=='msg'){const fl=t.fl?.files?.[0];if(fl&&fl.size>5*1024*1024)return toast('Lampiran maksimal 5 MB');if(!(v.t||'').trim()&&!fl)return;const o=new FormData();o.append('body',v.t||'');if(fl)o.append('file',fl);run(()=>api(`/deals/${did}/messages`,{method:'POST',body:o}))}
  if(f=='file'&&v.n){const o=new FormData();o.append('title',v.n);o.append('note',v.n2||'');o.append('value',v.v||0);if(t.fn.files[0])o.append('file',t.fn.files[0]);run(()=>api(`/deals/${did}/fulfillments`,{method:'POST',body:o}))}},true);
-const _route=route;route=function(){const a=location.hash.startsWith('#/admin')&&S.user?.role=='admin';document.body.classList.toggle('is-adm',a);return a?admin():_route()};
+
+
+const setStaticProfileAvatar = () => {
+  const h = location.hash || '';
+  if (!h.startsWith('#/onboarding') && !h.startsWith('#/profil')) return;
+  const el = document.querySelector('.pf-av, .pf-avatar, .profile-av, .profile-avatar, .av, [class*="avatar"]');
+  if (!el) return;
+  if (el.tagName === 'IMG') {
+    el.src = STATIC_AVATAR;
+    el.style.objectFit = 'cover';
+    return;
+  }
+  if (!el.querySelector('img')) {
+    el.innerHTML = `<img src="${STATIC_AVATAR}" alt="Foto profil" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+  }
+};
+
+const _prevRoute = route;
+route = function () {
+  const a = location.hash.startsWith('#/admin') && S.user?.role == 'admin';
+  document.body.classList.toggle('is-adm', a);
+  const res = a ? admin() : _prevRoute();
+  setTimeout(setStaticProfileAvatar, 0);
+  return res;
+};
+
+
 removeEventListener('hashchange',_route);addEventListener('hashchange',route);
 addEventListener('focus',async()=>{if(!S.user||S.user.role=='admin'||$('#dlg').open||($('#onb')&&!S.user.profile)||document.activeElement.matches('input,textarea,select'))return;try{await sync();route()}catch{}});
 (async()=>{if(localStorage.kdt){try{await sync();if(S.user.role=='admin')location.hash='/admin'}catch{localStorage.removeItem('kdt');S.user=null}}route()})();
