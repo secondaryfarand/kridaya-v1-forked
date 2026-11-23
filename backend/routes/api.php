@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class,'me']);
     Route::post('/me/plan', [AuthController::class,'setPlan']);
     Route::post('/profile', [ProfileController::class,'store'])->middleware('throttle:20,1');
+    Route::post('/plan/request', [AuthController::class,'requestPlan'])->middleware('throttle:5,1');
     Route::post('/profile/update', [ProfileController::class,'update'])->middleware('throttle:20,1');
     Route::post('/profile/logo', [ProfileController::class,'logo'])->middleware('throttle:10,1');
     Route::get('/discover', [DiscoverController::class,'index']);
@@ -21,6 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/deals/{deal}')->group(function () {
         Route::post('/respond', [DealController::class,'respond']);
         Route::post('/messages', [DealController::class,'sendMessage']);
+        Route::get('/messages/{message}/download', [DealController::class,'downloadMessage']);
+        Route::post('/review', [DealController::class,'review'])->middleware('throttle:10,1');
         Route::post('/mou', [DealController::class,'mou']);
         Route::post('/sign', [DealController::class,'sign']);
         Route::post('/fulfillments', [DealController::class,'fulfil']);
@@ -37,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/deals', [AdminController::class,'deals']);
         Route::get('/users', [AdminController::class,'users']);
         Route::post('/users/{user}/plan', [AdminController::class,'setPlan']);
+        Route::get('/plan-requests', [AdminController::class,'planRequests']);
+        Route::post('/plan-requests/{planRequest}', [AdminController::class,'decidePlan']);
         Route::get('/logs', [AdminController::class,'logs']);
     });
 });
