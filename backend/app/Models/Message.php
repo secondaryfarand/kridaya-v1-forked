@@ -1,4 +1,4 @@
 <?php
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
-class Message extends Model { protected $fillable = ['deal_id','user_id','body']; }
+class Message extends Model { protected $fillable = ['deal_id','user_id','body','file_path','file_name']; protected $hidden = ['file_path']; }

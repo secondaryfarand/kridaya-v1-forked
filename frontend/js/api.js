@@ -3,13 +3,13 @@ const API='https://kridaya-v1-forked-production.up.railway.app/api',files={};
 const api=async(p,{method='GET',body}={})=>{const fm=body instanceof FormData,
  r=await fetch(API+p,{method,body:fm?body:body&&JSON.stringify(body),headers:{Accept:'application/json',...(body&&!fm?{'Content-Type':'application/json'}:{}),...(localStorage.kdt?{Authorization:'Bearer '+localStorage.kdt}:{})}});
  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Error '+r.status);return j};
-const nP=(p,own)=>{const x=p.extra||{};return{id:p.user_id,n:p.name,c:p.category,l:p.location,d:p.description,t:p.types||[],sla:24,want:x.want||[],logo:x.logo,status:p.status,note:p.note,y:x.y,nib:x.nib,m:x.m,w:x.w,s:x.s,bmin:x.bmin,bmax:x.bmax,b:own&&S.user.role=='event'?x.badan:[+x.bmin||0,+x.bmax||0]}};
+const nP=(p,own)=>{const x=p.extra||{};return{id:p.user_id,n:p.name,c:p.category,l:p.location,d:p.description,t:p.types||[],sla:24,want:x.want||[],rating:p.rating_avg,rc:p.rating_count||0,logo:x.logo,status:p.status,note:p.note,y:x.y,nib:x.nib,m:x.m,w:x.w,s:x.s,bmin:x.bmin,bmax:x.bmax,b:own&&S.user.role=='event'?x.badan:[+x.bmin||0,+x.bmax||0]}};
 const nD=d=>{const me=S.user.id,ev=d.event_user_id==me;return{id:d.id,pid:ev?d.sponsor_user_id:d.event_user_id,dir:d.initiator_id==me?'out':'in',st:d.status,ct:Date.parse(d.created_at),up:Date.parse(d.updated_at),mt:d.mou_at?Date.parse(d.mou_at):0,se:d.event_signed_at?Date.parse(d.event_signed_at):0,ss:d.sponsor_signed_at?Date.parse(d.sponsor_signed_at):0,en:d.ended_at?Date.parse(d.ended_at):0,
- at:d.deadline_at?Date.parse(d.deadline_at)-12096e5:Date.parse(d.created_at),mou:!!d.mou_at,ce:d.event_sign_code,cs:d.sponsor_sign_code,pitch:d.pitch||'',pd:d.partner_docs||[],sg:{e:!!d.event_signed_at,s:!!d.sponsor_signed_at},
- msgs:d.messages.map(m=>({t:m.body,me:m.user_id==me,at:Date.parse(m.created_at)})),fl:d.fulfillments.map(f=>({id:f.id,k:f.kind=='material'?'sp':'ev',n:f.title,n2:f.note,v:+f.value,fn:f.file_name,ok:!!f.verified_at,at:Date.parse(f.created_at),vt:f.verified_at?Date.parse(f.verified_at):0}))}};
+ at:d.deadline_at?Date.parse(d.deadline_at)-12096e5:Date.parse(d.created_at),mou:!!d.mou_at,ce:d.event_sign_code,cs:d.sponsor_sign_code,pitch:d.pitch||'',pd:d.partner_docs||[],rm:d.review_mine||null,rt:d.review_theirs||null,sg:{e:!!d.event_signed_at,s:!!d.sponsor_signed_at},
+ msgs:d.messages.map(m=>({t:m.body,me:m.user_id==me,at:Date.parse(m.created_at),f:m.file_name,mid:m.id})),fl:d.fulfillments.map(f=>({id:f.id,k:f.kind=='material'?'sp':'ev',n:f.title,n2:f.note,v:+f.value,fn:f.file_name,ok:!!f.verified_at,at:Date.parse(f.created_at),vt:f.verified_at?Date.parse(f.verified_at):0}))}};
 async function sync(){const u=await api('/me');S.user={id:u.id,name:u.name,role:u.role,profile:null};
  if(u.profile)S.user.profile={...nP(u.profile,1),docs:Object.fromEntries((u.documents||[]).map(d=>[d.type,d.path.split('/').pop()])),dl:(u.documents||[]).map(d=>({id:d.id,type:d.type,name:d.path.split('/').pop()}))};
- S.plan=u.plan;S.used=u.matches_used;S.ok=u.profile?.status=='approved';SPONSORS.length=EVENTS.length=0;S.deals=[];
+ S.plan=u.plan;S.planReq=u.plan_request||null;S.used=u.matches_used;S.ok=u.profile?.status=='approved';SPONSORS.length=EVENTS.length=0;S.deals=[];
  if(S.ok&&u.role!='admin'){(u.role=='event'?SPONSORS:EVENTS).push(...(await api('/discover')).map(p=>nP(p)));S.deals=(await api('/deals')).map(nD)}}
 const swap=r=>{localStorage.removeItem('kdt');Object.assign(S,{user:null,deals:[],ok:false,plan:'free',used:0,pref:{}});SPONSORS.length=EVENTS.length=0;for(const k in files)delete files[k];docs={};step=0;reg=null;go('/daftar/'+r)};
 const run=async f=>{try{await f();await sync();route()}catch(e){toast(e.message)}},id=e=>e.dataset.id;
@@ -35,7 +35,7 @@ document.addEventListener('change',e=>{const t=e.target;if(t.dataset.doc&&t.file
 document.addEventListener('submit',e=>{const f=e.target.dataset.f,t=e.target,v=Object.fromEntries(new FormData(t)),did=location.hash.split('/')[2];
  if(!['auth','msg','file'].includes(f))return;e.preventDefault();e.stopImmediatePropagation();
  if(f=='auth')api('/auth/otp',{method:'POST',body:{identifier:v.id,name:v.name,role:v.role}}).then(()=>{pend={id:v.id,name:v.name,role:v.role};step=1;route()}).catch(x=>toast(x.message));
- if(f=='msg'&&v.t.trim())run(()=>api(`/deals/${did}/messages`,{method:'POST',body:{body:v.t}}));
+ if(f=='msg'){const fl=t.fl?.files?.[0];if(fl&&fl.size>5*1024*1024)return toast('Lampiran maksimal 5 MB');if(!(v.t||'').trim()&&!fl)return;const o=new FormData();o.append('body',v.t||'');if(fl)o.append('file',fl);run(()=>api(`/deals/${did}/messages`,{method:'POST',body:o}))}
  if(f=='file'&&v.n){const o=new FormData();o.append('title',v.n);o.append('note',v.n2||'');o.append('value',v.v||0);if(t.fn.files[0])o.append('file',t.fn.files[0]);run(()=>api(`/deals/${did}/fulfillments`,{method:'POST',body:o}))}},true);
 const _route=route;route=function(){const a=location.hash.startsWith('#/admin')&&S.user?.role=='admin';document.body.classList.toggle('is-adm',a);return a?admin():_route()};
 removeEventListener('hashchange',_route);addEventListener('hashchange',route);
@@ -71,3 +71,11 @@ document.addEventListener('input',e=>{if(e.target.closest?.('.otp')&&$$('.otp in
 setInterval(async()=>{if(document.hidden||!S.user||S.user.role=='admin'||!localStorage.kdt)return;const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;if($('#dlg').open)return;
  const r=location.hash.slice(2).split('/')[0];if(['onboarding','masuk','daftar','matching','verifikasi'].includes(r))return;
  try{const b=JSON.stringify(S.deals);await sync();if(JSON.stringify(S.deals)!==b)route()}catch{}},30000);
+
+/* ===== ulasan, ajukan Premium, lampiran chat ===== */
+Object.assign(A,{
+ reqplan:()=>run(()=>api('/plan/request',{method:'POST'}).then(()=>toast('Permintaan dikirim. Admin akan memeriksanya.'))),
+ dlmsg:e=>dl(`/deals/${e.dataset.did}/messages/${e.dataset.mid}/download`,e.dataset.n)});
+document.addEventListener('submit',e=>{if(e.target.dataset.f!='review')return;e.preventDefault();e.stopImmediatePropagation();
+ const f=new FormData(e.target),id=e.target.dataset.id;if(!f.get('rating'))return toast('Pilih jumlah bintang dulu');
+ run(()=>api(`/deals/${id}/review`,{method:'POST',body:{rating:+f.get('rating'),comment:(f.get('comment')||'').trim()}}).then(()=>toast('Terima kasih, ulasanmu terkirim')))},true);

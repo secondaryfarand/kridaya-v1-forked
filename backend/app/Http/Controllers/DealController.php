@@ -1,6 +1,6 @@
 <?php
 namespace App\Http\Controllers;
-use App\Models\{Deal, Document, Fulfillment, User};
+use App\Models\{Deal, Document, Fulfillment, Message, Review, User};
 use App\Support\Notify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,11 +15,16 @@ class DealController extends Controller {
 
     public function index(Request $r) {
         $u = $r->user();
-        return $u->deals()->with(['event','sponsor','messages','fulfillments'])->latest()->get()->map(function ($d) use ($u) {
+        return $u->deals()->with(['event','sponsor','messages','fulfillments','reviews'])->latest()->get()->map(function ($d) use ($u) {
             $a = $d->toArray();
             $a['partner_docs'] = $u->role === 'sponsor' && in_array($d->status, ['pending','active','done'])
                 ? Document::where('user_id', $d->event_user_id)->whereIn('type', ['proposal','rab','panitia','dok'])->get(['id','type','path'])
                     ->map(fn ($x) => ['id'=>$x->id,'type'=>$x->type,'name'=>basename($x->path)])->values() : [];
+            // Ulasan pihak lain baru terlihat setelah kamu mengirim ulasanmu sendiri.
+            $mine = $d->reviews->firstWhere('reviewer_id', $u->id);
+            $a['review_mine'] = $mine;
+            $a['review_theirs'] = $mine ? $d->reviews->first(fn ($x) => $x->reviewer_id !== $u->id) : null;
+            unset($a['reviews']);
             return $a;
         });
     }
@@ -53,7 +58,27 @@ class DealController extends Controller {
         return $deal;
     }
     public function sendMessage(Request $r, Deal $deal) {
-        return $this->active($r,$deal)->messages()->create(['user_id'=>$r->user()->id,'body'=>$r->validate(['body'=>'required|string|max:2000'])['body']]);
+        $this->active($r,$deal);
+        $v = $r->validate(['body'=>'nullable|string|max:2000','file'=>'nullable|file|max:5120|mimes:pdf,jpg,jpeg,png,docx,zip']);
+        $f = $r->file('file');
+        abort_if(trim($v['body'] ?? '') === '' && !$f, 422, 'Tulis pesan atau lampirkan berkas.');
+        return $deal->messages()->create(['user_id'=>$r->user()->id,'body'=>$v['body'] ?? '','file_path'=>$f?->store("deals/{$deal->id}/chat"),'file_name'=>$f?->getClientOriginalName()]);
+    }
+    public function downloadMessage(Request $r, Deal $deal, Message $message) {
+        $this->mine($r,$deal);
+        abort_unless($message->deal_id === $deal->id && $message->file_path && Storage::exists($message->file_path), 404, 'File tidak ditemukan di server');
+        return Storage::download($message->file_path, $message->file_name);
+    }
+    /** Ulasan setelah kerja sama selesai. Satu ulasan per pihak. */
+    public function review(Request $r, Deal $deal) {
+        $this->mine($r,$deal);
+        abort_unless($deal->status === 'done', 422, 'Ulasan hanya bisa diberikan setelah kerja sama selesai.');
+        $v = $r->validate(['rating'=>'required|integer|between:1,5','comment'=>'nullable|string|max:500']);
+        abort_if(Review::where('deal_id',$deal->id)->where('reviewer_id',$r->user()->id)->exists(), 422, 'Kamu sudah memberi ulasan.');
+        $to = $r->user()->id === $deal->event_user_id ? $deal->sponsor_user_id : $deal->event_user_id;
+        $rv = Review::create(['deal_id'=>$deal->id,'reviewer_id'=>$r->user()->id,'reviewee_id'=>$to,'rating'=>$v['rating'],'comment'=>$v['comment'] ?? null]);
+        Notify::to(User::find($to), 'Kamu menerima ulasan', 'Pihak lain memberi ulasan untuk kerja samamu. Beri ulasanmu juga untuk melihatnya.');
+        return $rv;
     }
     public function mou(Request $r, Deal $deal) { $this->active($r,$deal)->update(['mou_at'=>now()]); return $deal; }
     /** Tanda tangan = kode verifikasi unik (ditampilkan sebagai barcode) yang bisa dicek publik lewat /verify/{kode}. */
