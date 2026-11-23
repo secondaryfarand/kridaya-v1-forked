@@ -3,7 +3,10 @@ const API='https://kridaya-v1-forked-production.up.railway.app/api',files={};
 const api=async(p,{method='GET',body}={})=>{const fm=body instanceof FormData,
  r=await fetch(API+p,{method,body:fm?body:body&&JSON.stringify(body),headers:{Accept:'application/json',...(body&&!fm?{'Content-Type':'application/json'}:{}),...(localStorage.kdt?{Authorization:'Bearer '+localStorage.kdt}:{})}});
  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||'Error '+r.status);return j};
-const nP=(p,own)=>{const x=p.extra||{};return{id:p.user_id,n:p.name,c:p.category,l:p.location,d:p.description,t:p.types||[],sla:24,want:x.want||[],rating:p.rating_avg,rc:p.rating_count||0,logo:x.logo,status:p.status,note:p.note,y:x.y,nib:x.nib,m:x.m,w:x.w,s:x.s,bmin:x.bmin,bmax:x.bmax,b:own&&S.user.role=='event'?x.badan:[+x.bmin||0,+x.bmax||0]}};
+
+ const STATIC_AVATAR = encodeURI('assets/logo_kridaya.png'); // ganti dengan path foto statis Anda
+const nP=(p,own)=>{const x=p.extra||{};return{id:p.user_id,n:p.name,c:p.category,l:p.location,d:p.description,t:p.types||[],sla:24,want:x.want||[],rating:p.rating_avg,rc:p.rating_count||0,logo:x.logo||STATIC_AVATAR,status:p.status,note:p.note,y:x.y,nib:x.nib,m:x.m,w:x.w,s:x.s,bmin:x.bmin,bmax:x.bmax,b:own&&S.user.role=='event'?x.badan:[+x.bmin||0,+x.bmax||0]}};
+
 const nD=d=>{const me=S.user.id,ev=d.event_user_id==me;return{id:d.id,pid:ev?d.sponsor_user_id:d.event_user_id,dir:d.initiator_id==me?'out':'in',st:d.status,ct:Date.parse(d.created_at),up:Date.parse(d.updated_at),mt:d.mou_at?Date.parse(d.mou_at):0,se:d.event_signed_at?Date.parse(d.event_signed_at):0,ss:d.sponsor_signed_at?Date.parse(d.sponsor_signed_at):0,en:d.ended_at?Date.parse(d.ended_at):0,
  at:d.deadline_at?Date.parse(d.deadline_at)-12096e5:Date.parse(d.created_at),mou:!!d.mou_at,ce:d.event_sign_code,cs:d.sponsor_sign_code,pitch:d.pitch||'',pd:d.partner_docs||[],rm:d.review_mine||null,rt:d.review_theirs||null,sg:{e:!!d.event_signed_at,s:!!d.sponsor_signed_at},
  msgs:d.messages.map(m=>({t:m.body,me:m.user_id==me,at:Date.parse(m.created_at),f:m.file_name,mid:m.id})),fl:d.fulfillments.map(f=>({id:f.id,k:f.kind=='material'?'sp':'ev',n:f.title,n2:f.note,v:+f.value,fn:f.file_name,ok:!!f.verified_at,at:Date.parse(f.created_at),vt:f.verified_at?Date.parse(f.verified_at):0}))}};
